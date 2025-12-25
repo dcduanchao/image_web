@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Danryoku 浏览器</title>
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary: #10b981;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg) 0%, #e2e8f0 100%);
+    margin: 0;
+    padding: 24px;
+    color: var(--text);
+    min-height: 100vh;
+    transition: padding 0.3s ease;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+}
+
+nav a {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+#search-bar {
+    text-align: center;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+#kw {
+    padding: 12px 16px;
+    width: 280px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 16px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+}
+
+#kw:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+#search-bar button {
+    padding: 12px 24px;
+    background: var(--secondary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+#search-bar button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+#status {
+    text-align: center;
+    margin-bottom: 24px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 列表页布局 */
+#content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+    justify-items: center;
+    margin-bottom: 32px;
+    transition: all 0.3s ease;
+}
+
+.item {
+    background: var(--card);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 460px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.item:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+.item img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    background: #f1f5f9;
+    padding: 8px;
+}
+
+.item .title {
+    padding: 16px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 16px;
+    flex-grow: 1;
+}
+
+/* 返回列表按钮 */
+/* 返回列表按钮 - 增大 */
+.back-button {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 20px;        /* 增大 padding */
+    font-size: 30px;           /* 增大字体 */
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-hover);
+    z-index: 100;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* 新增：回到顶部按钮（仅详情页显示） */
+#toTop {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 100px;               /* 增大到 60px */
+    height: 100px;
+    background: rgba(37, 99, 235, 0.9);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 50px;           /* 图标更大 */
+    cursor: pointer;
+    box-shadow: var(--shadow-hover);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+}
+
+#toTop:hover {
+    background: var(--primary);
+    transform: scale(1.15);
+}
+
+#toTop.show {
+    display: flex;
+}
+
+/* 详情页满屏画廊 */
+.gallery.fullscreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100vw;
+    padding: 0 12px;
+    margin: 0;
+}
+
+.gallery.fullscreen img {
+    width: 98%;
+    height: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.gallery.fullscreen img:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+/* 详情页模式 */
+body.detail-mode { padding: 0; }
+#content.detail-mode {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    max-width: 100vw;
+}
+
+/* 分页与跳页 */
+#pagination, #jump-container { display: none; text-align: center; margin-top: 32px; }
+#pagination { justify-content: center; flex-wrap: wrap; gap: 8px; }
+#pagination a {
+    padding: 10px 16px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--radius);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+#pagination a:hover { background: var(--primary-hover); transform: translateY(-2px); }
+#pagination a.current { background: #f59e0b; color: #333; }
+
+/* 响应式 */
+@media (max-width: 1024px) {
+    #content { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
+
+@media (max-width: 768px) {
+    body { padding: 16px; }
+    h1 { font-size: 2rem; }
+    #search-bar { flex-direction: column; }
+    #kw { width: 100%; max-width: 300px; }
+    #content { grid-template-columns: 1fr 1fr; gap: 18px; }
+    .item { max-width: none; }
+    .gallery.fullscreen { padding: 0 8px; gap: 16px; }
+    #toTop { bottom: 20px; right: 20px; width: 45px; height: 45px; font-size: 20px; }
+}
+
+@media (max-width: 480px) {
+    #content { grid-template-columns: 1fr; gap: 16px; }
+    .gallery.fullscreen { padding: 0 6px; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<h1>Danryoku 浏览器</h1>
+
+<nav>
+  <a onclick="loadCategory('https://danryoku.com/category/nsfw/')">NSFW</a>
+  <a onclick="loadCategory('https://danryoku.com/category/cosplay/')">COSPLAY</a>
+  <a onclick="loadCategory('https://danryoku.com/category/country/japan/')">Japan</a>
+  <a onclick="loadCategory('https://danryoku.com/category/country/china/')">China</a>
+  <a onclick="loadCategory('https://danryoku.com/category/country/korea/')">Korea</a>
+  <a onclick="loadCategory('https://danryoku.com/category/country/taiwan/')">Taiwan</a>
+  <a onclick="loadCategory('https://danryoku.com/category/country/western/')">Western</a>
+  <a onclick="loadRandom()">RANDOM</a>
+</nav>
+
+<div id="search-bar">
+  <input id="kw" placeholder="搜索关键词">
+  <button onclick="search()">搜索</button>
+</div>
+
+<p id="status"></p>
+
+<button class="back-button" onclick="goBack()">← 返回</button>
+
+<!-- 新增：回到顶部按钮 -->
+<button id="toTop" onclick="scrollToTop()" title="回到顶部">↑</button>
+
+<div id="content"></div>
+
+<div id="pagination"></div>
+
+<div id="jump-container">
+  跳转到第 <input type="number" id="jumpPage" min="1"> 页
+  <button onclick="jumpToPage()">跳转</button>
+</div>
+
+<script>
+let currentCategoryUrl = null;
+let currentSearchQuery = null;
+let pagination = null;
+
+// 平滑回到顶部
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 监听滚动，控制回到顶部按钮显示
+window.addEventListener('scroll', () => {
+    const toTopBtn = document.getElementById('toTop');
+    if (window.scrollY > 300) {
+        toTopBtn.classList.add('show');
+    } else {
+        toTopBtn.classList.remove('show');
+    }
+});
+
+function renderList(list) {
+    document.body.classList.remove('detail-mode');
+    document.getElementById('content').classList.remove('detail-mode');
+    document.getElementById('toTop').classList.remove('show'); // 列表页隐藏按钮
+
+    const content = document.getElementById("content");
+    content.innerHTML = "";
+    document.getElementById("status").innerHTML = `<span class="loading"></span> 正在加载...`;
+    document.querySelector('.back-button').style.display = 'none';
+
+    setTimeout(() => {
+        document.getElementById("status").textContent = `列表数量：${list.length}`;
+        document.getElementById("pagination").style.display = "flex";
+        document.getElementById("jump-container").style.display = "block";
+
+        list.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.onclick = () => loadDetail(item.url);
+            div.tabIndex = 0;
+            div.role = "button";
+
+            const img = document.createElement("img");
+            img.loading = "lazy";
+            img.src = item.thumb || "https://via.placeholder.com/400x600?text=No+Image";
+            img.alt = item.title;
+
+            const title = document.createElement("div");
+            title.className = "title";
+            title.textContent = item.title;
+
+            div.append(img, title);
+            content.appendChild(div);
+        });
+    }, 300);
+}
+
+function renderImages(list) {
+    if (!Array.isArray(list) || list.length === 0) return;
+
+    document.body.classList.add('detail-mode');
+    document.getElementById('content').classList.add('detail-mode');
+
+    const content = document.getElementById("content");
+    const status = document.getElementById("status");
+    content.innerHTML = "";
+    status.innerHTML = `<span class="loading"></span> 正在加载图片...`;
+    document.querySelector('.back-button').style.display = 'block';
+
+    setTimeout(() => {
+        status.textContent = `图片数：${list.length}`;
+        document.getElementById("pagination").style.display = "none";
+        document.getElementById("jump-container").style.display = "none";
+
+        const gallery = document.createElement("div");
+        gallery.className = "gallery fullscreen";
+
+        list.forEach(imgObj => {
+            if (!imgObj?.url) return;
+            const img = document.createElement("img");
+            img.loading = "lazy";
+            img.src = imgObj.url;
+            img.alt = imgObj.title || "";
+            img.onerror = () => img.src = "https://via.placeholder.com/400x300?text=加载失败";
+            gallery.appendChild(img);
+        });
+
+        content.appendChild(gallery);
+    }, 300);
+}
+
+function renderPagination(p) {
+    const container = document.getElementById("pagination");
+    if (!p?.pages?.length) {
+        container.style.display = "none";
+        return;
+    }
+    container.style.display = "flex";
+    container.innerHTML = "";
+    pagination = p;
+    p.pages.forEach(pg => {
+        const a = document.createElement("a");
+        a.textContent = pg.num;
+        a.href = "#";
+        if (pg.num === p.current) a.className = "current";
+        else a.onclick = () => loadCategory(pg.url);
+        container.appendChild(a);
+    });
+}
+
+async function loadCategory(url) {
+    document.getElementById("status").textContent = "加载中...";
+    currentCategoryUrl = url;
+    currentSearchQuery = null;
+    const res = await fetch(`/api/category?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    renderList(data.items);
+    renderPagination(data.pagination);
+}
+
+async function search() {
+    const q = document.getElementById("kw").value.trim();
+    if (!q) return;
+    document.getElementById("status").textContent = "搜索中...";
+    currentSearchQuery = q;
+    currentCategoryUrl = null;
+    loadSearchPage(q, 1);
+}
+
+async function loadSearchPage(q, page) {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&page=${page}`);
+    const data = await res.json();
+    renderList(data.items);
+    renderPagination(data.pagination);
+}
+
+async function loadRandom() {
+    document.getElementById("status").textContent = "加载随机...";
+    const res = await fetch("/api/random");
+    const list = await res.json();
+    renderImages(list);
+}
+
+async function loadDetail(url) {
+    document.getElementById("status").textContent = "加载详情中...";
+    const res = await fetch(`/api/detail?url=${encodeURIComponent(url)}`);
+    const list = await res.json();
+    renderImages(list);
+}
+
+function jumpToPage() {
+    let page = parseInt(document.getElementById("jumpPage").value);
+    if (!page || page < 1) return;
+    const max = pagination?.last || pagination?.pages?.slice(-1)[0]?.num || 1;
+    if (page > max) page = max;
+
+    if (currentCategoryUrl) {
+        let url = currentCategoryUrl.replace(/page\/\d+\//, `page/${page}/`);
+        if (!/page\/\d+\//.test(url)) url = url.replace(/\/$/, '') + `/page/${page}/`;
+        loadCategory(url);
+    } else if (currentSearchQuery) {
+        loadSearchPage(currentSearchQuery, page);
+    }
+}
+
+function goBack() {
+    if (currentCategoryUrl) loadCategory(currentCategoryUrl);
+    else if (currentSearchQuery) loadSearchPage(currentSearchQuery, 1);
+    else loadCategory('https://danryoku.com/category/nsfw/');
+}
+</script>
+
+</body>
+</html>
