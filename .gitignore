@@ -1,8 +1,7 @@
 .venv/
 .venv/**
 
+# IntelliJ / IDEA
 .idea/
-.idea/**
+*.iml
 
-
-*.idea/
