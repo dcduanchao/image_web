@@ -17,10 +17,14 @@ session = requests.Session()
 session.headers.update(HEADERS)
 
 # 本地代理（线上不设置环境变量即可）
-session.proxies = {
-    "http": "http://127.0.0.1:7897",
-    "https": "http://127.0.0.1:7897",
-}
+# 尝试加载代理配置
+try:
+    from proxy import PROXIES
+    if PROXIES:
+        session.proxies.update(PROXIES)
+        print("✅ 使用本地代理")
+except ImportError:
+    print("ℹ️ 未检测到代理配置，直连")
 
 TIMEOUT = (10, 60)
 
